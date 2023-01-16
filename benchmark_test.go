@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	q1 "github.com/golang-queue/benchmark/CircularBuffer"
 	"github.com/golang-queue/queue"
 	"github.com/golang-queue/queue/core"
 	"github.com/golang-queue/queue/job"
@@ -40,7 +41,15 @@ func testQueueAndRequest(b *testing.B, pool testqueue) {
 	}
 }
 
-func BenchmarkNewCusumer(b *testing.B) {
+func BenchmarkCircularBuffer(b *testing.B) {
+	pool := q1.NewCircularBuffer(
+		b.N * count,
+	)
+
+	testQueueAndRequest(b, pool)
+}
+
+func BenchmarkRingBuffer(b *testing.B) {
 	pool := queue.NewConsumer(
 		queue.WithQueueSize(b.N * count),
 	)
