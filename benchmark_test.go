@@ -19,7 +19,7 @@ type testqueue interface {
 	Request() (core.QueuedMessage, error)
 }
 
-func testQueue(b *testing.B, pool testqueue) {
+func testQueueAndRequest(b *testing.B, pool testqueue) {
 	message := job.NewTask(func(context.Context) error {
 		return nil
 	},
@@ -35,37 +35,7 @@ func testQueue(b *testing.B, pool testqueue) {
 	for n := 0; n < b.N; n++ {
 		for i := 0; i < count; i++ {
 			_ = pool.Queue(message)
-		}
-	}
-}
-
-func testRequest(b *testing.B, pool testqueue) {
-	message := job.NewTask(func(context.Context) error {
-		return nil
-	},
-		job.AllowOption{
-			RetryCount: job.Int64(100),
-			RetryDelay: job.Time(30 * time.Millisecond),
-			Timeout:    job.Time(3 * time.Millisecond),
-		},
-	)
-
-	b.ReportAllocs()
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		for i := 0; i < count; i++ {
-			// do not measure the enqueueing process
-			b.StopTimer()
-			for i := 0; i < count; i++ {
-				_ = pool.Queue(message)
-			}
-		}
-		for i := 0; i < count; i++ {
-			// measure the dequeueing process
-			b.StartTimer()
-			for i := 0; i < count; i++ {
-				_, _ = pool.Request()
-			}
+			_, _ = pool.Request()
 		}
 	}
 }
@@ -75,8 +45,7 @@ func BenchmarkNewCusumer(b *testing.B) {
 		queue.WithQueueSize(b.N * count),
 	)
 
-	testQueue(b, pool)
-	// testRequest(b, pool)
+	testQueueAndRequest(b, pool)
 }
 
 func BenchmarkFIFOEnqueueSingleGR(b *testing.B) {
@@ -86,6 +55,7 @@ func BenchmarkFIFOEnqueueSingleGR(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		fifo.Enqueue(i)
+		fifo.Dequeue()
 	}
 }
 
@@ -96,5 +66,6 @@ func BenchmarkFixedFIFOEnqueueSingleGR(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		fifo.Enqueue(i)
+		fifo.Dequeue()
 	}
 }
