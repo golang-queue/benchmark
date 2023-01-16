@@ -20,6 +20,25 @@ type testqueue interface {
 	Request() (core.QueuedMessage, error)
 }
 
+func testQueue(b *testing.B, pool testqueue) {
+	message := job.NewTask(func(context.Context) error {
+		return nil
+	},
+		job.AllowOption{
+			RetryCount: job.Int64(100),
+			RetryDelay: job.Time(30 * time.Millisecond),
+			Timeout:    job.Time(3 * time.Millisecond),
+		},
+	)
+
+	b.ReportAllocs()
+	for n := 0; n < b.N; n++ {
+		for i := 0; i < count; i++ {
+			_ = pool.Queue(message)
+		}
+	}
+}
+
 func testQueueAndRequest(b *testing.B, pool testqueue) {
 	message := job.NewTask(func(context.Context) error {
 		return nil
@@ -32,7 +51,6 @@ func testQueueAndRequest(b *testing.B, pool testqueue) {
 	)
 
 	b.ReportAllocs()
-	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		for i := 0; i < count; i++ {
 			_ = pool.Queue(message)
@@ -41,7 +59,7 @@ func testQueueAndRequest(b *testing.B, pool testqueue) {
 	}
 }
 
-func BenchmarkCircularBuffer(b *testing.B) {
+func BenchmarkCircularBufferQueueAndRequest(b *testing.B) {
 	pool := q1.NewCircularBuffer(
 		b.N * count,
 	)
@@ -49,12 +67,28 @@ func BenchmarkCircularBuffer(b *testing.B) {
 	testQueueAndRequest(b, pool)
 }
 
-func BenchmarkRingBuffer(b *testing.B) {
+func BenchmarkRingBufferQueueAndRequest(b *testing.B) {
 	pool := queue.NewConsumer(
 		queue.WithQueueSize(b.N * count),
 	)
 
 	testQueueAndRequest(b, pool)
+}
+
+func BenchmarkCircularBufferQueue(b *testing.B) {
+	pool := q1.NewCircularBuffer(
+		b.N * count,
+	)
+
+	testQueue(b, pool)
+}
+
+func BenchmarkRingBufferQueue(b *testing.B) {
+	pool := queue.NewConsumer(
+		queue.WithQueueSize(b.N * count),
+	)
+
+	testQueue(b, pool)
 }
 
 func BenchmarkFIFOEnqueueSingleGR(b *testing.B) {
