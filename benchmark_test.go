@@ -1,0 +1,100 @@
+package benchmark
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/golang-queue/queue"
+	"github.com/golang-queue/queue/core"
+	"github.com/golang-queue/queue/job"
+
+	"github.com/enriquebris/goconcurrentqueue"
+)
+
+var count = 1
+
+type testqueue interface {
+	Queue(task core.QueuedMessage) error
+	Request() (core.QueuedMessage, error)
+}
+
+func testQueue(b *testing.B, pool testqueue) {
+	message := job.NewTask(func(context.Context) error {
+		return nil
+	},
+		job.AllowOption{
+			RetryCount: job.Int64(100),
+			RetryDelay: job.Time(30 * time.Millisecond),
+			Timeout:    job.Time(3 * time.Millisecond),
+		},
+	)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		for i := 0; i < count; i++ {
+			_ = pool.Queue(message)
+		}
+	}
+}
+
+func testRequest(b *testing.B, pool testqueue) {
+	message := job.NewTask(func(context.Context) error {
+		return nil
+	},
+		job.AllowOption{
+			RetryCount: job.Int64(100),
+			RetryDelay: job.Time(30 * time.Millisecond),
+			Timeout:    job.Time(3 * time.Millisecond),
+		},
+	)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		for i := 0; i < count; i++ {
+			// do not measure the enqueueing process
+			b.StopTimer()
+			for i := 0; i < count; i++ {
+				_ = pool.Queue(message)
+			}
+		}
+		for i := 0; i < count; i++ {
+			// measure the dequeueing process
+			b.StartTimer()
+			for i := 0; i < count; i++ {
+				_, _ = pool.Request()
+			}
+		}
+	}
+}
+
+func BenchmarkNewCusumer(b *testing.B) {
+	pool := queue.NewConsumer(
+		queue.WithQueueSize(b.N * count),
+	)
+
+	testQueue(b, pool)
+	// testRequest(b, pool)
+}
+
+func BenchmarkFIFOEnqueueSingleGR(b *testing.B) {
+	fifo := goconcurrentqueue.NewFIFO()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		fifo.Enqueue(i)
+	}
+}
+
+func BenchmarkFixedFIFOEnqueueSingleGR(b *testing.B) {
+	fifo := goconcurrentqueue.NewFixedFIFO(5)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		fifo.Enqueue(i)
+	}
+}
