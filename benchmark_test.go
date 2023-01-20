@@ -95,97 +95,49 @@ func testQueueAndRequest(b *testing.B, pool testqueue) {
 }
 
 func BenchmarkQueueAndRequestChannel(b *testing.B) {
-	pool := ch.NewConsumer(
-		b.N * count,
-	)
-
-	testQueueAndRequest(b, pool)
+	testQueueAndRequest(b, ch.NewConsumer(b.N*count))
 }
 
 func BenchmarkQueueAndRequestContainerList(b *testing.B) {
-	pool := cl.NewContainerList(
-		b.N * count,
-	)
-
-	testQueueAndRequest(b, pool)
+	testQueueAndRequest(b, cl.NewContainerList(b.N*count))
 }
 
 func BenchmarkQueueAndRequestCircularBuffer(b *testing.B) {
-	pool := cb.NewCircularBuffer(
-		b.N * count,
-	)
-
-	testQueueAndRequest(b, pool)
+	testQueueAndRequest(b, cb.NewCircularBuffer(b.N*count))
 }
 
 func BenchmarkQueueAndRequestRingBuffer(b *testing.B) {
-	pool := rb.NewConsumer(
-		b.N * count,
-	)
-
-	testQueueAndRequest(b, pool)
+	testQueueAndRequest(b, rb.NewConsumer(b.N*count))
 }
 
 func BenchmarkQueueChannel(b *testing.B) {
-	pool := ch.NewConsumer(
-		b.N * count,
-	)
-
-	testQueue(b, pool)
+	testQueue(b, ch.NewConsumer(b.N*count))
 }
 
 func BenchmarkQueueCircularBuffer(b *testing.B) {
-	pool := cb.NewCircularBuffer(
-		b.N * count,
-	)
-
-	testQueue(b, pool)
+	testQueue(b, cb.NewCircularBuffer(b.N*count))
 }
 
 func BenchmarkQueueRingBuffer(b *testing.B) {
-	pool := rb.NewConsumer(
-		b.N * count,
-	)
-
-	testQueue(b, pool)
+	testQueue(b, rb.NewConsumer(b.N*count))
 }
 
 func BenchmarkQueueContainerList(b *testing.B) {
-	pool := cl.NewContainerList(
-		b.N * count,
-	)
-
-	testQueue(b, pool)
+	testQueue(b, cl.NewContainerList(b.N*count))
 }
 
 func BenchmarkDeQueueWithChannel(b *testing.B) {
-	pool := ch.NewConsumer(
-		b.N * count,
-	)
-
-	testDeQueue(b, pool)
+	testDeQueue(b, ch.NewConsumer(b.N*count))
 }
 
 func BenchmarkDeQueueWithRingBuffer(b *testing.B) {
-	pool := rb.NewConsumer(
-		b.N * count,
-	)
-
-	testDeQueue(b, pool)
+	testDeQueue(b, rb.NewConsumer(b.N*count))
 }
 
 func BenchmarkDeQueueWithContainerList(b *testing.B) {
-	pool := cl.NewContainerList(
-		b.N * count,
-	)
-
-	testDeQueue(b, pool)
+	testDeQueue(b, cl.NewContainerList(b.N*count))
 }
 
 func BenchmarkDeQueueWithCircularBuffer(b *testing.B) {
-	pool := cb.NewCircularBuffer(
-		b.N * count,
-	)
-
-	testDeQueue(b, pool)
+	testDeQueue(b, cb.NewCircularBuffer(b.N*count))
 }
