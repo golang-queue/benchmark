@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	ch "github.com/golang-queue/benchmark/Channel"
 	cb "github.com/golang-queue/benchmark/CircularBuffer"
 	cl "github.com/golang-queue/benchmark/ContainerList"
 	rb "github.com/golang-queue/benchmark/RingBuffer"
@@ -76,12 +77,21 @@ func testQueueAndRequest(b *testing.B, pool testqueue) {
 	)
 
 	b.ReportAllocs()
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		for i := 0; i < count; i++ {
 			_ = pool.Queue(message)
 			_, _ = pool.Request()
 		}
 	}
+}
+
+func BenchmarkQueueAndRequestChannel(b *testing.B) {
+	pool := ch.NewConsumer(
+		b.N * count,
+	)
+
+	testQueueAndRequest(b, pool)
 }
 
 func BenchmarkQueueAndRequestContainerList(b *testing.B) {
@@ -108,6 +118,14 @@ func BenchmarkQueueAndRequestRingBuffer(b *testing.B) {
 	testQueueAndRequest(b, pool)
 }
 
+func BenchmarkQueueChannel(b *testing.B) {
+	pool := ch.NewConsumer(
+		b.N * count,
+	)
+
+	testQueue(b, pool)
+}
+
 func BenchmarkQueueCircularBuffer(b *testing.B) {
 	pool := cb.NewCircularBuffer(
 		b.N * count,
@@ -130,6 +148,14 @@ func BenchmarkQueueContainerList(b *testing.B) {
 	)
 
 	testQueue(b, pool)
+}
+
+func BenchmarkDeQueueWithChannel(b *testing.B) {
+	pool := ch.NewConsumer(
+		b.N * count,
+	)
+
+	testDeQueue(b, pool)
 }
 
 func BenchmarkDeQueueWithRingBuffer(b *testing.B) {
