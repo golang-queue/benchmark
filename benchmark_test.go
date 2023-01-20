@@ -9,11 +9,15 @@ import (
 	cb "github.com/golang-queue/benchmark/CircularBuffer"
 	cl "github.com/golang-queue/benchmark/ContainerList"
 	rb "github.com/golang-queue/benchmark/RingBuffer"
+
 	"github.com/golang-queue/queue/core"
 	"github.com/golang-queue/queue/job"
 )
 
-var count = 1
+var (
+	count  = 1
+	result core.QueuedMessage
+)
 
 type testqueue interface {
 	Queue(task core.QueuedMessage) error
@@ -36,13 +40,15 @@ func testDeQueue(b *testing.B, pool testqueue) {
 		}
 	}
 
+	var m core.QueuedMessage
 	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		for i := 0; i < count; i++ {
-			_, _ = pool.Request()
+			m, _ = pool.Request()
 		}
 	}
+	result = m
 }
 
 func testQueue(b *testing.B, pool testqueue) {
@@ -76,14 +82,16 @@ func testQueueAndRequest(b *testing.B, pool testqueue) {
 		},
 	)
 
+	var m core.QueuedMessage
 	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		for i := 0; i < count; i++ {
 			_ = pool.Queue(message)
-			_, _ = pool.Request()
+			m, _ = pool.Request()
 		}
 	}
+	result = m
 }
 
 func BenchmarkQueueAndRequestChannel(b *testing.B) {
