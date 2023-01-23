@@ -7,7 +7,7 @@ import (
 
 	ch "github.com/golang-queue/benchmark/Channel"
 	cb "github.com/golang-queue/benchmark/CircularBuffer"
-	cl "github.com/golang-queue/benchmark/ContainerList"
+	dl "github.com/golang-queue/benchmark/DoublyLinked"
 	rb "github.com/golang-queue/benchmark/RingBuffer"
 
 	"github.com/golang-queue/queue/core"
@@ -98,8 +98,8 @@ func BenchmarkQueueAndRequestChannel(b *testing.B) {
 	testQueueAndRequest(b, ch.NewConsumer(b.N*count))
 }
 
-func BenchmarkQueueAndRequestContainerList(b *testing.B) {
-	testQueueAndRequest(b, cl.NewContainerList(b.N*count))
+func BenchmarkQueueAndRequestDoublyLinked(b *testing.B) {
+	testQueueAndRequest(b, dl.NewDoublyLinked(b.N*count))
 }
 
 func BenchmarkQueueAndRequestCircularBuffer(b *testing.B) {
@@ -122,8 +122,8 @@ func BenchmarkQueueRingBuffer(b *testing.B) {
 	testQueue(b, rb.NewConsumer(b.N*count))
 }
 
-func BenchmarkQueueContainerList(b *testing.B) {
-	testQueue(b, cl.NewContainerList(b.N*count))
+func BenchmarkQueueDoublyLinked(b *testing.B) {
+	testQueue(b, dl.NewDoublyLinked(b.N*count))
 }
 
 func BenchmarkDeQueueWithChannel(b *testing.B) {
@@ -134,8 +134,8 @@ func BenchmarkDeQueueWithRingBuffer(b *testing.B) {
 	testDeQueue(b, rb.NewConsumer(b.N*count))
 }
 
-func BenchmarkDeQueueWithContainerList(b *testing.B) {
-	testDeQueue(b, cl.NewContainerList(b.N*count))
+func BenchmarkDeQueueWithDoublyLinked(b *testing.B) {
+	testDeQueue(b, dl.NewDoublyLinked(b.N*count))
 }
 
 func BenchmarkDeQueueWithCircularBuffer(b *testing.B) {
