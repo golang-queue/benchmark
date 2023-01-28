@@ -3,7 +3,6 @@ package doublylinked
 import (
 	"container/list"
 	"context"
-	"errors"
 	"sync"
 	"sync/atomic"
 
@@ -12,8 +11,6 @@ import (
 )
 
 var _ core.Worker = (*DoublyLinked)(nil)
-
-var errMaxCapacity = errors.New("max capacity reached")
 
 // DoublyLinked for simple queue using buffer channel
 type DoublyLinked struct {
@@ -51,7 +48,7 @@ func (s *DoublyLinked) Queue(task core.QueuedMessage) error {
 	}
 
 	if s.taskQueue.Len() >= s.capacity {
-		return errMaxCapacity
+		return queue.ErrMaxCapacity
 	}
 
 	s.taskQueue.PushBack(task)

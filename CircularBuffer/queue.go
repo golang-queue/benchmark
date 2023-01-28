@@ -1,8 +1,6 @@
 package circularbuffer
 
 import (
-	"context"
-	"errors"
 	"sync"
 	"sync/atomic"
 
@@ -10,26 +8,16 @@ import (
 	"github.com/golang-queue/queue/core"
 )
 
-var _ core.Worker = (*CircularBuffer)(nil)
-
-var errMaxCapacity = errors.New("max capacity reached")
-
 // CircularBuffer for simple queue using buffer channel
 type CircularBuffer struct {
 	sync.Mutex
 	taskQueue []core.QueuedMessage
-	runFunc   func(context.Context, core.QueuedMessage) error
 	capacity  int
 	head      int
 	tail      int
 	exit      chan struct{}
 	stopOnce  sync.Once
 	stopFlag  int32
-}
-
-// Run to execute new task
-func (s *CircularBuffer) Run(ctx context.Context, task core.QueuedMessage) error {
-	return s.runFunc(ctx, task)
 }
 
 // Shutdown the worker
@@ -52,7 +40,7 @@ func (s *CircularBuffer) Queue(task core.QueuedMessage) error {
 		return queue.ErrQueueShutdown
 	}
 	if s.IsFull() {
-		return errMaxCapacity
+		return queue.ErrMaxCapacity
 	}
 
 	s.Lock()

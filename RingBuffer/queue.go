@@ -2,7 +2,6 @@ package ringbuffer
 
 import (
 	"context"
-	"errors"
 	"sync"
 	"sync/atomic"
 
@@ -11,8 +10,6 @@ import (
 )
 
 var _ core.Worker = (*Consumer)(nil)
-
-var errMaxCapacity = errors.New("max capacity reached")
 
 // Consumer for simple queue using buffer channel
 type Consumer struct {
@@ -53,7 +50,7 @@ func (s *Consumer) Queue(task core.QueuedMessage) error { //nolint:stylecheck
 		return queue.ErrQueueShutdown
 	}
 	if s.capacity > 0 && s.count >= s.capacity {
-		return errMaxCapacity
+		return queue.ErrMaxCapacity
 	}
 
 	s.Lock()

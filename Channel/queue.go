@@ -2,7 +2,6 @@ package queue
 
 import (
 	"context"
-	"errors"
 	"sync"
 	"sync/atomic"
 
@@ -11,8 +10,6 @@ import (
 )
 
 var _ core.Worker = (*Consumer)(nil)
-
-var errMaxCapacity = errors.New("max capacity reached")
 
 // Consumer for simple queue using buffer channel
 type Consumer struct {
@@ -55,7 +52,7 @@ func (s *Consumer) Queue(task core.QueuedMessage) error {
 	case s.taskQueue <- task:
 		return nil
 	default:
-		return errMaxCapacity
+		return queue.ErrMaxCapacity
 	}
 }
 
