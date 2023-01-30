@@ -1,10 +1,8 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/goccy/go-json v0.10.0 h1:mXKd9Qw4NuzShiRlOXKews24ufknHO7gx30lsDyokKA=
 github.com/goccy/go-json v0.10.0/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
-github.com/golang-queue/queue v0.1.4-0.20230116141530-10c111be7eed h1:iYHd+xRf8zznIa6A1M9XK2gONQWANh8jrGkxAxYWDV0=
-github.com/golang-queue/queue v0.1.4-0.20230116141530-10c111be7eed/go.mod h1:8P7IgwdxwKh0/W1I9yCuQQGI8OHIuc7fIHi4OYr1COU=
-github.com/golang-queue/queue v0.1.4-0.20230128040859-bf40424b0f6e h1:pJwqxn8r7buMeOmvbMoUtyfzDhXIMlIjmDI6Y/jQY4o=
-github.com/golang-queue/queue v0.1.4-0.20230128040859-bf40424b0f6e/go.mod h1:8P7IgwdxwKh0/W1I9yCuQQGI8OHIuc7fIHi4OYr1COU=
+github.com/golang-queue/queue v0.1.4-0.20230129131029-321f27ee1387 h1:qAj1tqpV3BW7Ll4N9xM4L+sIPeJDH3dulJ6s4txt8Yg=
+github.com/golang-queue/queue v0.1.4-0.20230129131029-321f27ee1387/go.mod h1:iFgyvS8kKQ3Mh+diQ6ZqF6yFaYFm6gA8W0NW2CMQ8KI=
 github.com/golang/mock v1.6.0 h1:ErTB+efbowRARo13NNdxyJji2egdxLGQhRaY+DUumQc=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
