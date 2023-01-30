@@ -71,7 +71,7 @@ func testQueue(b *testing.B, pool testqueue) {
 	}
 }
 
-func testQueueAndRequest(b *testing.B, pool testqueue) {
+func testEnqueueAndDequeue(b *testing.B, pool testqueue) {
 	message := job.NewTask(func(context.Context) error {
 		return nil
 	},
@@ -94,50 +94,56 @@ func testQueueAndRequest(b *testing.B, pool testqueue) {
 	result = m
 }
 
-func BenchmarkQueueAndRequestChannel(b *testing.B) {
-	testQueueAndRequest(b, ch.NewConsumer(b.N*count))
+func BenchmarkEnqueueAndDequeue(b *testing.B) {
+	b.Run("InternalChannel", func(b *testing.B) {
+		testEnqueueAndDequeue(b, ch.NewConsumer(b.N*count))
+	})
+
+	b.Run("DoublyLinked", func(b *testing.B) {
+		testEnqueueAndDequeue(b, dl.NewDoublyLinked(b.N*count))
+	})
+
+	b.Run("CircularBuffer", func(b *testing.B) {
+		testEnqueueAndDequeue(b, cb.NewCircularBuffer(b.N*count))
+	})
+
+	b.Run("RingBuffer", func(b *testing.B) {
+		testEnqueueAndDequeue(b, rb.NewConsumer(b.N*count))
+	})
 }
 
-func BenchmarkQueueAndRequestDoublyLinked(b *testing.B) {
-	testQueueAndRequest(b, dl.NewDoublyLinked(b.N*count))
+func BenchmarkEnqueue(b *testing.B) {
+	b.Run("InternalChannel", func(b *testing.B) {
+		testQueue(b, ch.NewConsumer(b.N*count))
+	})
+
+	b.Run("DoublyLinked", func(b *testing.B) {
+		testQueue(b, dl.NewDoublyLinked(b.N*count))
+	})
+
+	b.Run("CircularBuffer", func(b *testing.B) {
+		testQueue(b, cb.NewCircularBuffer(b.N*count))
+	})
+
+	b.Run("RingBuffer", func(b *testing.B) {
+		testQueue(b, rb.NewConsumer(b.N*count))
+	})
 }
 
-func BenchmarkQueueAndRequestCircularBuffer(b *testing.B) {
-	testQueueAndRequest(b, cb.NewCircularBuffer(b.N*count))
-}
+func BenchmarkDequeue(b *testing.B) {
+	b.Run("InternalChannel", func(b *testing.B) {
+		testDeQueue(b, ch.NewConsumer(b.N*count))
+	})
 
-func BenchmarkQueueAndRequestRingBuffer(b *testing.B) {
-	testQueueAndRequest(b, rb.NewConsumer(b.N*count))
-}
+	b.Run("DoublyLinked", func(b *testing.B) {
+		testDeQueue(b, dl.NewDoublyLinked(b.N*count))
+	})
 
-func BenchmarkQueueChannel(b *testing.B) {
-	testQueue(b, ch.NewConsumer(b.N*count))
-}
+	b.Run("CircularBuffer", func(b *testing.B) {
+		testDeQueue(b, cb.NewCircularBuffer(b.N*count))
+	})
 
-func BenchmarkQueueCircularBuffer(b *testing.B) {
-	testQueue(b, cb.NewCircularBuffer(b.N*count))
-}
-
-func BenchmarkQueueRingBuffer(b *testing.B) {
-	testQueue(b, rb.NewConsumer(b.N*count))
-}
-
-func BenchmarkQueueDoublyLinked(b *testing.B) {
-	testQueue(b, dl.NewDoublyLinked(b.N*count))
-}
-
-func BenchmarkDeQueueWithChannel(b *testing.B) {
-	testDeQueue(b, ch.NewConsumer(b.N*count))
-}
-
-func BenchmarkDeQueueWithRingBuffer(b *testing.B) {
-	testDeQueue(b, rb.NewConsumer(b.N*count))
-}
-
-func BenchmarkDeQueueWithDoublyLinked(b *testing.B) {
-	testDeQueue(b, dl.NewDoublyLinked(b.N*count))
-}
-
-func BenchmarkDeQueueWithCircularBuffer(b *testing.B) {
-	testDeQueue(b, cb.NewCircularBuffer(b.N*count))
+	b.Run("RingBuffer", func(b *testing.B) {
+		testDeQueue(b, rb.NewConsumer(b.N*count))
+	})
 }
