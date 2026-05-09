@@ -16,12 +16,12 @@ import (
 
 var (
 	count  = 1
-	result core.QueuedMessage
+	result core.TaskMessage
 )
 
 type testqueue interface {
-	Queue(task core.QueuedMessage) error
-	Request() (core.QueuedMessage, error)
+	Queue(task core.TaskMessage) error
+	Request() (core.TaskMessage, error)
 }
 
 func testDeQueue(b *testing.B, pool testqueue) {
@@ -36,11 +36,11 @@ func testDeQueue(b *testing.B, pool testqueue) {
 	)
 	for n := 0; n < b.N; n++ {
 		for i := 0; i < count; i++ {
-			_ = pool.Queue(message)
+			_ = pool.Queue(&message)
 		}
 	}
 
-	var m core.QueuedMessage
+	var m core.TaskMessage
 	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
@@ -66,7 +66,7 @@ func testQueue(b *testing.B, pool testqueue) {
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		for i := 0; i < count; i++ {
-			_ = pool.Queue(message)
+			_ = pool.Queue(&message)
 		}
 	}
 }
@@ -82,12 +82,12 @@ func testEnqueueAndDequeue(b *testing.B, pool testqueue) {
 		},
 	)
 
-	var m core.QueuedMessage
+	var m core.TaskMessage
 	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		for i := 0; i < count; i++ {
-			_ = pool.Queue(message)
+			_ = pool.Queue(&message)
 			m, _ = pool.Request()
 		}
 	}

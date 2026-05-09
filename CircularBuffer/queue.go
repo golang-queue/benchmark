@@ -11,7 +11,7 @@ import (
 // CircularBuffer for simple queue using buffer channel
 type CircularBuffer struct {
 	sync.Mutex
-	taskQueue []core.QueuedMessage
+	taskQueue []core.TaskMessage
 	capacity  int
 	head      int
 	tail      int
@@ -35,7 +35,7 @@ func (s *CircularBuffer) Shutdown() error {
 }
 
 // Queue send task to the buffer channel
-func (s *CircularBuffer) Queue(task core.QueuedMessage) error {
+func (s *CircularBuffer) Queue(task core.TaskMessage) error {
 	if atomic.LoadInt32(&s.stopFlag) == 1 {
 		return queue.ErrQueueShutdown
 	}
@@ -52,7 +52,7 @@ func (s *CircularBuffer) Queue(task core.QueuedMessage) error {
 }
 
 // Request a new task from channel
-func (s *CircularBuffer) Request() (core.QueuedMessage, error) {
+func (s *CircularBuffer) Request() (core.TaskMessage, error) {
 	if atomic.LoadInt32(&s.stopFlag) == 1 && s.IsEmpty() {
 		select {
 		case s.exit <- struct{}{}:
@@ -86,7 +86,7 @@ func (s *CircularBuffer) IsFull() bool {
 // NewCircularBuffer for create new CircularBuffer instance
 func NewCircularBuffer(size int) *CircularBuffer {
 	w := &CircularBuffer{
-		taskQueue: make([]core.QueuedMessage, size),
+		taskQueue: make([]core.TaskMessage, size),
 		capacity:  size,
 		exit:      make(chan struct{}),
 	}

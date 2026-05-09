@@ -39,7 +39,7 @@ func BenchmarkEncode(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = job.Encode(m)
+			_ = job.Encode(&m)
 		}
 	})
 }
@@ -64,7 +64,7 @@ func BenchmarkDecode(b *testing.B) {
 	})
 
 	b.Run("UnsafeCast", func(b *testing.B) {
-		data := job.Encode(m)
+		data := job.Encode(&m)
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -93,7 +93,7 @@ func TestEncodeAndDecode(t *testing.T) {
 	})
 
 	t.Run("UnsafeCast", func(t *testing.T) {
-		data := job.Encode(m)
+		data := job.Encode(&m)
 		out := job.Decode(data)
 
 		assert.Equal(t, int64(100), out.RetryCount)

@@ -15,7 +15,7 @@ var _ core.Worker = (*DoublyLinked)(nil)
 // DoublyLinked for simple queue using buffer channel
 type DoublyLinked struct {
 	taskQueue *list.List
-	runFunc   func(context.Context, core.QueuedMessage) error
+	runFunc   func(context.Context, core.TaskMessage) error
 	capacity  int
 	exit      chan struct{}
 	stopOnce  sync.Once
@@ -23,7 +23,7 @@ type DoublyLinked struct {
 }
 
 // Run to execute new task
-func (s *DoublyLinked) Run(ctx context.Context, task core.QueuedMessage) error {
+func (s *DoublyLinked) Run(ctx context.Context, task core.TaskMessage) error {
 	return s.runFunc(ctx, task)
 }
 
@@ -42,7 +42,7 @@ func (s *DoublyLinked) Shutdown() error {
 }
 
 // Queue send task to the buffer channel
-func (s *DoublyLinked) Queue(task core.QueuedMessage) error {
+func (s *DoublyLinked) Queue(task core.TaskMessage) error {
 	if atomic.LoadInt32(&s.stopFlag) == 1 {
 		return queue.ErrQueueShutdown
 	}
@@ -57,7 +57,7 @@ func (s *DoublyLinked) Queue(task core.QueuedMessage) error {
 }
 
 // Request a new task from channel
-func (s *DoublyLinked) Request() (core.QueuedMessage, error) {
+func (s *DoublyLinked) Request() (core.TaskMessage, error) {
 	if atomic.LoadInt32(&s.stopFlag) == 1 && s.taskQueue.Len() == 0 {
 		select {
 		case s.exit <- struct{}{}:
@@ -73,7 +73,7 @@ func (s *DoublyLinked) Request() (core.QueuedMessage, error) {
 	peak := s.taskQueue.Back()
 	s.taskQueue.Remove(s.taskQueue.Back())
 
-	return peak.Value.(core.QueuedMessage), nil
+	return peak.Value.(core.TaskMessage), nil
 }
 
 // NewDoublyLinked  for create new DoublyLinked  instance

@@ -13,8 +13,8 @@ var _ core.Worker = (*Consumer)(nil)
 
 // Consumer for simple queue using buffer channel
 type Consumer struct {
-	taskQueue chan core.QueuedMessage
-	runFunc   func(context.Context, core.QueuedMessage) error
+	taskQueue chan core.TaskMessage
+	runFunc   func(context.Context, core.TaskMessage) error
 	stop      chan struct{}
 	exit      chan struct{}
 	stopOnce  sync.Once
@@ -22,7 +22,7 @@ type Consumer struct {
 }
 
 // Run to execute new task
-func (s *Consumer) Run(ctx context.Context, task core.QueuedMessage) error {
+func (s *Consumer) Run(ctx context.Context, task core.TaskMessage) error {
 	return s.runFunc(ctx, task)
 }
 
@@ -43,7 +43,7 @@ func (s *Consumer) Shutdown() error {
 }
 
 // Queue send task to the buffer channel
-func (s *Consumer) Queue(task core.QueuedMessage) error {
+func (s *Consumer) Queue(task core.TaskMessage) error {
 	if atomic.LoadInt32(&s.stopFlag) == 1 {
 		return queue.ErrQueueShutdown
 	}
@@ -57,7 +57,7 @@ func (s *Consumer) Queue(task core.QueuedMessage) error {
 }
 
 // Request a new task from channel
-func (s *Consumer) Request() (core.QueuedMessage, error) {
+func (s *Consumer) Request() (core.TaskMessage, error) {
 	select {
 	case task, ok := <-s.taskQueue:
 		if !ok {
@@ -76,7 +76,7 @@ func (s *Consumer) Request() (core.QueuedMessage, error) {
 // NewConsumer for create new consumer instance
 func NewConsumer(size int) *Consumer {
 	w := &Consumer{
-		taskQueue: make(chan core.QueuedMessage, size),
+		taskQueue: make(chan core.TaskMessage, size),
 		stop:      make(chan struct{}),
 		exit:      make(chan struct{}),
 	}
