@@ -18,7 +18,7 @@ type Consumer struct {
 	stop      chan struct{}
 	exit      chan struct{}
 	stopOnce  sync.Once
-	stopFlag  int32
+	stopFlag  atomic.Int32
 }
 
 // Run to execute new task
@@ -28,7 +28,7 @@ func (s *Consumer) Run(ctx context.Context, task core.TaskMessage) error {
 
 // Shutdown the worker
 func (s *Consumer) Shutdown() error {
-	if !atomic.CompareAndSwapInt32(&s.stopFlag, 0, 1) {
+	if !s.stopFlag.CompareAndSwap(0, 1) {
 		return queue.ErrQueueShutdown
 	}
 
@@ -44,7 +44,7 @@ func (s *Consumer) Shutdown() error {
 
 // Queue send task to the buffer channel
 func (s *Consumer) Queue(task core.TaskMessage) error {
-	if atomic.LoadInt32(&s.stopFlag) == 1 {
+	if s.stopFlag.Load() == 1 {
 		return queue.ErrQueueShutdown
 	}
 

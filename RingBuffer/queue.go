@@ -22,7 +22,7 @@ type Consumer struct {
 	tail      int
 	exit      chan struct{}
 	stopOnce  sync.Once
-	stopFlag  int32
+	stopFlag  atomic.Int32
 }
 
 // Run to execute new task
@@ -32,7 +32,7 @@ func (s *Consumer) Run(ctx context.Context, task core.TaskMessage) error {
 
 // Shutdown the worker
 func (s *Consumer) Shutdown() error {
-	if !atomic.CompareAndSwapInt32(&s.stopFlag, 0, 1) {
+	if !s.stopFlag.CompareAndSwap(0, 1) {
 		return queue.ErrQueueShutdown
 	}
 
@@ -45,8 +45,8 @@ func (s *Consumer) Shutdown() error {
 }
 
 // Queue send task to the buffer channel
-func (s *Consumer) Queue(task core.TaskMessage) error { //nolint:stylecheck
-	if atomic.LoadInt32(&s.stopFlag) == 1 {
+func (s *Consumer) Queue(task core.TaskMessage) error {
+	if s.stopFlag.Load() == 1 {
 		return queue.ErrQueueShutdown
 	}
 	if s.capacity > 0 && s.count >= s.capacity {
@@ -67,7 +67,7 @@ func (s *Consumer) Queue(task core.TaskMessage) error { //nolint:stylecheck
 
 // Request a new task from channel
 func (s *Consumer) Request() (core.TaskMessage, error) {
-	if atomic.LoadInt32(&s.stopFlag) == 1 && s.count == 0 {
+	if s.stopFlag.Load() == 1 && s.count == 0 {
 		select {
 		case s.exit <- struct{}{}:
 		default:
@@ -92,18 +92,18 @@ func (s *Consumer) Request() (core.TaskMessage, error) {
 	return data, nil
 }
 
-func (q *Consumer) resize(n int) {
+func (s *Consumer) resize(n int) {
 	nodes := make([]core.TaskMessage, n)
-	if q.head < q.tail {
-		copy(nodes, q.taskQueue[q.head:q.tail])
+	if s.head < s.tail {
+		copy(nodes, s.taskQueue[s.head:s.tail])
 	} else {
-		copy(nodes, q.taskQueue[q.head:])
-		copy(nodes[len(q.taskQueue)-q.head:], q.taskQueue[:q.tail])
+		copy(nodes, s.taskQueue[s.head:])
+		copy(nodes[len(s.taskQueue)-s.head:], s.taskQueue[:s.tail])
 	}
 
-	q.tail = q.count % n
-	q.head = 0
-	q.taskQueue = nodes
+	s.tail = s.count % n
+	s.head = 0
+	s.taskQueue = nodes
 }
 
 // NewConsumer for create new Consumer instance

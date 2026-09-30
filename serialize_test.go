@@ -4,9 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang-queue/queue/job"
-
 	"github.com/goccy/go-json"
+	"github.com/golang-queue/queue/job"
 	"github.com/stretchr/testify/assert"
 )
 
