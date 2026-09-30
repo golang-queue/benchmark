@@ -17,12 +17,12 @@ type CircularBuffer struct {
 	tail      int
 	exit      chan struct{}
 	stopOnce  sync.Once
-	stopFlag  int32
+	stopFlag  atomic.Int32
 }
 
 // Shutdown the worker
 func (s *CircularBuffer) Shutdown() error {
-	if !atomic.CompareAndSwapInt32(&s.stopFlag, 0, 1) {
+	if !s.stopFlag.CompareAndSwap(0, 1) {
 		return queue.ErrQueueShutdown
 	}
 
@@ -36,7 +36,7 @@ func (s *CircularBuffer) Shutdown() error {
 
 // Queue send task to the buffer channel
 func (s *CircularBuffer) Queue(task core.TaskMessage) error {
-	if atomic.LoadInt32(&s.stopFlag) == 1 {
+	if s.stopFlag.Load() == 1 {
 		return queue.ErrQueueShutdown
 	}
 	if s.IsFull() {
@@ -53,7 +53,7 @@ func (s *CircularBuffer) Queue(task core.TaskMessage) error {
 
 // Request a new task from channel
 func (s *CircularBuffer) Request() (core.TaskMessage, error) {
-	if atomic.LoadInt32(&s.stopFlag) == 1 && s.IsEmpty() {
+	if s.stopFlag.Load() == 1 && s.IsEmpty() {
 		select {
 		case s.exit <- struct{}{}:
 		default:

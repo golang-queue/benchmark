@@ -35,7 +35,7 @@ func testDeQueue(b *testing.B, pool testqueue) {
 		},
 	)
 	for n := 0; n < b.N; n++ {
-		for i := 0; i < count; i++ {
+		for range count {
 			_ = pool.Queue(&message)
 		}
 	}
@@ -44,7 +44,7 @@ func testDeQueue(b *testing.B, pool testqueue) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		for i := 0; i < count; i++ {
+		for range count {
 			m, _ = pool.Request()
 		}
 	}
@@ -65,7 +65,7 @@ func testQueue(b *testing.B, pool testqueue) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		for i := 0; i < count; i++ {
+		for range count {
 			_ = pool.Queue(&message)
 		}
 	}
@@ -86,7 +86,7 @@ func testEnqueueAndDequeue(b *testing.B, pool testqueue) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		for i := 0; i < count; i++ {
+		for range count {
 			_ = pool.Queue(&message)
 			m, _ = pool.Request()
 		}

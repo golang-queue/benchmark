@@ -19,7 +19,7 @@ type DoublyLinked struct {
 	capacity  int
 	exit      chan struct{}
 	stopOnce  sync.Once
-	stopFlag  int32
+	stopFlag  atomic.Int32
 }
 
 // Run to execute new task
@@ -29,7 +29,7 @@ func (s *DoublyLinked) Run(ctx context.Context, task core.TaskMessage) error {
 
 // Shutdown the worker
 func (s *DoublyLinked) Shutdown() error {
-	if !atomic.CompareAndSwapInt32(&s.stopFlag, 0, 1) {
+	if !s.stopFlag.CompareAndSwap(0, 1) {
 		return queue.ErrQueueShutdown
 	}
 
@@ -43,7 +43,7 @@ func (s *DoublyLinked) Shutdown() error {
 
 // Queue send task to the buffer channel
 func (s *DoublyLinked) Queue(task core.TaskMessage) error {
-	if atomic.LoadInt32(&s.stopFlag) == 1 {
+	if s.stopFlag.Load() == 1 {
 		return queue.ErrQueueShutdown
 	}
 
@@ -58,7 +58,7 @@ func (s *DoublyLinked) Queue(task core.TaskMessage) error {
 
 // Request a new task from channel
 func (s *DoublyLinked) Request() (core.TaskMessage, error) {
-	if atomic.LoadInt32(&s.stopFlag) == 1 && s.taskQueue.Len() == 0 {
+	if s.stopFlag.Load() == 1 && s.taskQueue.Len() == 0 {
 		select {
 		case s.exit <- struct{}{}:
 		default:
