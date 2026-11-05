@@ -28,16 +28,14 @@ func BenchmarkEncode(b *testing.B) {
 
 	b.Run("JSON", func(b *testing.B) {
 		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			_, _ = json.Marshal(m)
 		}
 	})
 
 	b.Run("UnsafeCast", func(b *testing.B) {
 		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			_ = job.Encode(&m)
 		}
 	})
@@ -56,8 +54,7 @@ func BenchmarkDecode(b *testing.B) {
 		data, _ := json.Marshal(m)
 		out := &job.Message{}
 		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			_ = json.Unmarshal(data, out)
 		}
 	})
@@ -65,8 +62,7 @@ func BenchmarkDecode(b *testing.B) {
 	b.Run("UnsafeCast", func(b *testing.B) {
 		data := job.Encode(&m)
 		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			_ = job.Decode(data)
 		}
 	})
